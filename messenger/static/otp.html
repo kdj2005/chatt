@@ -1,0 +1,578 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ChatApp - Vérification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --error: #f72585;
+            --success: #4cc9f0;
+            --gray: #adb5bd;
+            --light: #f8f9fa;
+            --dark: #2b2d42;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            color: var(--dark);
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.6s forwards 0.3s;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
+                border-radius: 14px;
+            }
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            animation: progress 2s ease-in-out infinite;
+        }
+        
+        .logo {
+            width: 60px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 22px;
+            }
+        }
+        
+        p {
+            color: var(--gray);
+            margin-bottom: 25px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 480px) {
+            p {
+                font-size: 13px;
+                margin-bottom: 20px;
+            }
+        }
+        
+        .code-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            position: relative;
+            gap: 10px;
+        }
+        
+        @media (max-width: 480px) {
+            .code-container {
+                gap: 8px;
+            }
+        }
+        
+        .code-input {
+            width: 100%;
+            height: 60px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 400;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            color: var(--secondary);
+            -webkit-appearance: none;
+            flex: 1;
+        }
+        
+        @media (max-width: 480px) {
+            .code-input {
+                height: 55px;
+                font-size: 22px;
+            }
+        }
+        
+        .code-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .code-input.filled {
+            animation: bounce 0.4s;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 480px) {
+            .btn {
+                padding: 13px 20px;
+                font-size: 15px;
+            }
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(67, 97, 238, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn.loading {
+            pointer-events: none;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: translateX(-100%);
+        }
+        
+        .btn:hover::after {
+            animation: shine 1.5s infinite;
+        }
+        
+        .resend {
+            margin-top: 20px;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        @media (max-width: 480px) {
+            .resend {
+                font-size: 13px;
+            }
+        }
+        
+        .resend a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .resend a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .resend a:hover::after {
+            width: 100%;
+        }
+        
+        .error {
+            color: var(--error);
+            margin-bottom: 15px;
+            font-size: 13px;
+            height: 18px;
+            animation: shake 0.5s;
+        }
+        
+        .success {
+            color: var(--success);
+            margin-bottom: 15px;
+            font-size: 13px;
+            height: 18px;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            10%, 30%, 50%, 70%, 90% {
+                transform: translateX(-5px);
+            }
+            20%, 40%, 60%, 80% {
+                transform: translateX(5px);
+            }
+        }
+        
+        @keyframes progress {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        @keyframes shine {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+        }
+        
+        /* Optimisation pour mobile */
+        @media (max-height: 600px) {
+            .container {
+                margin: 10px 0;
+                padding: 20px 15px;
+            }
+            
+            .code-input {
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            h1 {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+            
+            p {
+                margin-bottom: 15px;
+            }
+        }
+        
+        /* Empêcher le zoom sur iOS */
+        input, textarea, select {
+            font-size: 16px !important;
+        }
+        
+        @media screen and (-webkit-min-device-pixel-ratio:0) {
+            select:focus, textarea:focus, input:focus {
+                font-size: 16px !important;
+                background: #eee;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="CH.png" alt="ChatApp Logo" class="logo">
+        <h1>Vérification du code</h1>
+        <p>Nous avons envoyé un code à 5 chiffres à votre adresse email. Veuillez le saisir ci-dessous pour vérifier votre compte.</p>
+        
+        <form id="verificationForm">
+            <div class="code-container">
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required inputmode="numeric">
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required inputmode="numeric">
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required inputmode="numeric">
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required inputmode="numeric">
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" required inputmode="numeric">
+            </div>
+            
+            <div id="errorMessage" class="error" style="display: none;"></div>
+            <div id="successMessage" class="success" style="display: none;"></div>
+            
+            <button type="submit" class="btn" id="submitBtn">
+                <span id="btnText">Vérifier</span>
+                <i class="fas fa-spinner fa-spin" id="spinner" style="display: none; margin-left: 8px;"></i>
+            </button>
+        </form>
+        
+        <div class="resend">
+            Vous n'avez pas reçu de code ? <a href="#" id="resendLink">Renvoyer le code</a>
+        </div>
+    </div>
+
+   <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.code-input');
+    const form = document.getElementById('verificationForm');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+    const resendLink = document.getElementById('resendLink');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const spinner = document.getElementById('spinner');
+
+    // Empêcher le zoom sur iOS
+    document.addEventListener('touchstart', function() {}, {passive: true});
+
+    // Ajuster la hauteur pour mobile
+    function adjustHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    window.addEventListener('resize', adjustHeight);
+    adjustHeight();
+
+    // Animation d'entrée pour chaque champ de code
+    inputs.forEach((input, index) => {
+        input.style.opacity = '0';
+        input.style.transform = 'translateY(10px)';
+        input.style.animation = `fadeInUp 0.4s forwards ${index * 0.1 + 0.6}s`;
+    });
+
+    // Gestion de la saisie du code
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length === 1) {
+                this.classList.add('filled');
+                setTimeout(() => this.classList.remove('filled'), 400);
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                } else {
+                    this.blur();
+                }
+            }
+        });
+
+        // Gestion du copier-coller
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const numbers = paste.replace(/[^0-9]/g, '');
+            if (numbers.length >= 5) {
+                for (let i = 0; i < 5; i++) {
+                    if (inputs[i]) {
+                        inputs[i].value = numbers[i] || '';
+                        inputs[i].classList.add('filled');
+                        setTimeout(() => inputs[i].classList.remove('filled'), 400);
+                    }
+                }
+                if (inputs[4]) inputs[4].focus();
+            }
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && this.value.length === 0) {
+                if (index > 0) {
+                    inputs[index - 1].focus();
+                }
+            }
+        });
+
+        input.addEventListener('focus', function() {
+            this.setAttribute('inputmode', 'numeric');
+        });
+    });
+
+    // Récupérer l'email depuis l'URL
+    function getEmailFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('email') || '';
+    }
+
+    // Validation du formulaire et appel backend pour vérifier le code OTP
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        let code = '';
+        let isValid = true;
+
+        inputs.forEach(input => {
+            code += input.value;
+            if (!input.value) {
+                isValid = false;
+            }
+        });
+
+        if (!isValid) {
+            errorMessage.textContent = 'Veuillez saisir le code complet à 5 chiffres.';
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            for (let i = 0; i < inputs.length; i++) {
+                if (!inputs[i].value) {
+                    inputs[i].focus();
+                    break;
+                }
+            }
+            return;
+        }
+
+        if (code.length !== 5) {
+            errorMessage.textContent = 'Le code doit comporter exactement 5 chiffres.';
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            return;
+        }
+
+        errorMessage.style.display = 'none';
+        submitBtn.classList.add('loading');
+        btnText.textContent = 'Vérification...';
+        spinner.style.display = 'inline-block';
+
+        // Appel backend pour vérifier l'OTP
+        try {
+            const email = getEmailFromURL();
+            const res = await fetch(`auth/verify-otp/${encodeURIComponent(email)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp: code })
+            });
+            const data = await res.json();
+            if (data.success) {
+                successMessage.textContent = 'Code vérifié avec succès! Redirection en cours...';
+                successMessage.style.display = 'block';
+                submitBtn.style.background = 'linear-gradient(45deg, #2ecc71, #27ae60)';
+                btnText.textContent = 'Réussi!';
+                spinner.style.display = 'none';
+                setTimeout(() => {
+                    window.location.href = '/reset-password?email=' + encodeURIComponent(email); // Redirection après succès
+                }, 1500);
+            } else {
+                errorMessage.textContent = data.message || "Code incorrect ou expiré.";
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                submitBtn.classList.remove('loading');
+                btnText.textContent = 'Vérifier';
+                spinner.style.display = 'none';
+            }
+        } catch (err) {
+            errorMessage.textContent = "Erreur réseau ou serveur.";
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            submitBtn.classList.remove('loading');
+            btnText.textContent = 'Vérifier';
+            spinner.style.display = 'none';
+        }
+    });
+
+    // Renvoi du code OTP
+    resendLink.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const originalText = resendLink.textContent;
+        resendLink.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi...';
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+
+        try {
+            const email = getEmailFromURL();
+            const res = await fetch('/verify-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (data.success) {
+                successMessage.textContent = 'Un nouveau code a été envoyé à votre adresse email.';
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                inputs.forEach(input => { input.value = ''; });
+                inputs[0].focus();
+                setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
+            } else {
+                errorMessage.textContent = data.message || "Erreur lors de l'envoi du code.";
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+        } catch (err) {
+            errorMessage.textContent = "Erreur réseau ou serveur.";
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+        resendLink.textContent = originalText;
+    });
+})
+</script>
+</body>
+</html>

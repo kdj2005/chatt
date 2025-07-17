@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu du Pendu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .hangman-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+        }
+        
+        .hangman-part {
+            position: absolute;
+            background-color: #333;
+            display: none;
+        }
+        
+        /* Structure du pendu */
+        #base { width: 80px; height: 5px; bottom: 0; left: 35px; display: block; }
+        #pole { width: 5px; height: 150px; bottom: 0; left: 35px; display: block; }
+        #top-bar { width: 50px; height: 5px; top: 0; left: 40px; display: block; }
+        #rope { width: 3px; height: 15px; top: 5px; left: 85px; display: block; }
+        
+        /* Parties du bonhomme */
+        #head { width: 20px; height: 20px; border-radius: 50%; top: 20px; left: 75px; }
+        #body { width: 3px; height: 40px; top: 40px; left: 85px; }
+        #left-arm { width: 25px; height: 3px; top: 50px; left: 60px; transform: rotate(30deg); }
+        #right-arm { width: 25px; height: 3px; top: 50px; left: 85px; transform: rotate(-30deg); }
+        #left-leg { width: 25px; height: 3px; top: 80px; left: 60px; transform: rotate(-30deg); }
+        #right-leg { width: 25px; height: 3px; top: 80px; left: 85px; transform: rotate(30deg); }
+        
+        .word-display {
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            margin: 10px 0;
+            text-align: center;
+            min-height: 30px;
+            word-break: break-all;
+        }
+        
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        .key {
+            width: 100%;
+            aspect-ratio: 1;
+            max-width: 30px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .key:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+        
+        .key:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 10px 0;
+            min-height: 20px;
+            text-align: center;
+        }
+        
+        button.reset {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button.reset:hover {
+            background-color: #27ae60;
+        }
+
+        @media (max-width: 400px) {
+            .keyboard {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        @media (max-width: 350px) {
+            .keyboard {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Jeu du Pendu</h1>
+    <div class="game-container">
+        <div class="hangman-container">
+            <!-- Structure du pendu -->
+            <div class="hangman-part" id="base"></div>
+            <div class="hangman-part" id="pole"></div>
+            <div class="hangman-part" id="top-bar"></div>
+            <div class="hangman-part" id="rope"></div>
+            
+            <!-- Parties du bonhomme -->
+            <div class="hangman-part" id="head"></div>
+            <div class="hangman-part" id="body"></div>
+            <div class="hangman-part" id="left-arm"></div>
+            <div class="hangman-part" id="right-arm"></div>
+            <div class="hangman-part" id="left-leg"></div>
+            <div class="hangman-part" id="right-leg"></div>
+        </div>
+        
+        <div class="word-display" id="word-display"></div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="keyboard" id="keyboard"></div>
+        
+        <button class="reset" id="reset">Nouvelle partie</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Liste de mots à deviner (plus simples et plus courts)
+            const words = [
+                'TRAVAIL', 'CANCRE', 'CSS', 'DEONTOLOGIE', '66579781', '1', 
+                'TROUILLE', 'FLEMME', 'ECRAN', 'SOURIS', 'FOBIE'
+            ];
+            
+            // Éléments du DOM
+            const wordDisplay = document.getElementById('word-display');
+            const messageEl = document.getElementById('message');
+            const keyboard = document.getElementById('keyboard');
+            const resetBtn = document.getElementById('reset');
+            const hangmanParts = [
+                'head', 'body', 'left-arm', 'right-arm', 'left-leg', 'right-leg'
+            ];
+            
+            // Variables du jeu
+            let selectedWord = '';
+            let guessedLetters = [];
+            let errorCount = 0;
+            let gameActive = false;
+            
+            // Initialisation du clavier
+            function createKeyboard() {
+                keyboard.innerHTML = '';
+                for (let i = 65; i <= 90; i++) {
+                    const letter = String.fromCharCode(i);
+                    const button = document.createElement('button');
+                    button.className = 'key';
+                    button.textContent = letter;
+                    button.dataset.letter = letter;
+                    button.addEventListener('click', () => handleGuess(letter));
+                    keyboard.appendChild(button);
+                }
+            }
+            
+            // Sélection d'un mot aléatoire
+            function selectRandomWord() {
+                return words[Math.floor(Math.random() * words.length)];
+            }
+            
+            // Initialisation du jeu
+            function initGame() {
+                selectedWord = selectRandomWord();
+                guessedLetters = [];
+                errorCount = 0;
+                gameActive = true;
+                
+                // Réinitialiser l'affichage
+                updateWordDisplay();
+                messageEl.textContent = '';
+                messageEl.style.color = '#333';
+                
+                // Réinitialiser le pendu
+                hangmanParts.forEach(part => {
+                    document.getElementById(part).style.display = 'none';
+                });
+                
+                // Réactiver le clavier
+                document.querySelectorAll('.key').forEach(button => {
+                    button.disabled = false;
+                });
+            }
+            
+            // Mettre à jour l'affichage du mot
+            function updateWordDisplay() {
+                const display = selectedWord.split('').map(letter => {
+                    return guessedLetters.includes(letter) ? letter : '_';
+                }).join(' ');
+                
+                wordDisplay.textContent = display;
+                
+                // Vérifier si le joueur a gagné
+                if (!display.includes('_')) {
+                    endGame(true);
+                }
+            }
+            
+            // Gérer une tentative de lettre
+            function handleGuess(letter) {
+                if (!gameActive) return;
+                
+                const button = document.querySelector(`.key[data-letter="${letter}"]`);
+                button.disabled = true;
+                
+                if (selectedWord.includes(letter)) {
+                    guessedLetters.push(letter);
+                    updateWordDisplay();
+                } else {
+                    errorCount++;
+                    updateHangman();
+                    
+                    if (errorCount >= hangmanParts.length) {
+                        endGame(false);
+                    }
+                }
+            }
+            
+            // Mettre à jour le dessin du pendu
+            function updateHangman() {
+                if (errorCount > 0 && errorCount <= hangmanParts.length) {
+                    document.getElementById(hangmanParts[errorCount - 1]).style.display = 'block';
+                }
+            }
+            
+            // Fin de partie
+            function endGame(isWin) {
+                gameActive = false;
+                
+                if (isWin) {
+                    messageEl.textContent = 'Gagné !';
+                    messageEl.style.color = '#2ecc71';
+                } else {
+                    messageEl.textContent = `Perdu ! Le mot était : ${selectedWord}`;
+                    messageEl.style.color = '#e74c3c';
+                }
+            }
+            
+            // Gestion des touches du clavier physique
+            document.addEventListener('keydown', (e) => {
+                if (!gameActive) return;
+                
+                const key = e.key.toUpperCase();
+                if (/^[A-Z]$/.test(key)) {
+                    const button = document.querySelector(`.key[data-letter="${key}"]`);
+                    if (button && !button.disabled) {
+                        button.click();
+                    }
+                }
+            });
+            
+            // Initialiser le jeu au chargement
+            createKeyboard();
+            initGame();
+            
+            // Bouton de réinitialisation
+            resetBtn.addEventListener('click', initGame);
+        });
+    </script>
+</body>
+</html>

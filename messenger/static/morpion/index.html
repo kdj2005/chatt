@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morpion Expert - Joueur vs IA</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --text: #2b2d42;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #43aa8b;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text);
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        h1 {
+            color: var(--secondary);
+            margin: 0.5rem 0 1rem;
+            font-size: 1.8rem;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .player-name {
+            font-size: 1rem;
+            margin: 0.5rem 0;
+            padding: 0.5rem 1rem;
+            background-color: white;
+            border-radius: 50px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .game-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            background-color: var(--light);
+            border-radius: 12px;
+            padding: 0.8rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+        }
+        
+        .score {
+            text-align: center;
+            padding: 0.4rem 0.6rem;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 70px;
+        }
+        
+        .player-score {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+        
+        .draw-score {
+            background-color: rgba(67, 170, 139, 0.1);
+            color: var(--info);
+        }
+        
+        .computer-score {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+        }
+        
+        .status {
+            font-size: 1rem;
+            margin: 1rem 0;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.7rem;
+            border-radius: 8px;
+            background-color: var(--light);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            margin: 1.2rem 0;
+            aspect-ratio: 1/1;
+        }
+        
+        .cell {
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .cell:active {
+            transform: scale(0.95);
+        }
+        
+        .cell.x {
+            color: var(--primary);
+        }
+        
+        .cell.o {
+            color: var(--danger);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 0.7rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .reset-btn {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .new-game-btn {
+            background-color: var(--info);
+            color: white;
+        }
+        
+        .name-btn {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .thinking {
+            position: relative;
+        }
+        
+        .thinking::after {
+            content: 'L\'IA réfléchit...';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            font-size: 0.9rem;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 0.9; }
+            100% { opacity: 0.6; }
+        }
+        
+        .winning-cell {
+            animation: glow 1s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 5px rgba(67, 97, 238, 0.5); }
+            to { box-shadow: 0 0 15px rgba(67, 97, 238, 0.8); }
+        }
+        
+        .difficulty-selector {
+            margin: 0.8rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .difficulty-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            background-color: var(--light);
+            color: var(--text);
+            border: 1px solid var(--light);
+        }
+        
+        .difficulty-btn.active {
+            border-color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .modal h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 0.7rem;
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1.2rem;
+        }
+        
+        @media (min-width: 400px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .player-name {
+                font-size: 1.1rem;
+            }
+            
+            .cell {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Morpion Expert</h1>
+        
+        <div class="player-name" id="player-name-display">
+            Joueur: <span id="player-name">Invité</span>
+        </div>
+        
+        <div class="score-board">
+            <div class="score player-score">
+                <div id="player-label">Joueur (X)</div>
+                <div id="player-score">0</div>
+            </div>
+            <div class="score draw-score">
+                <div>Égalités</div>
+                <div id="draw-score">0</div>
+            </div>
+            <div class="score computer-score">
+                <div>IA (O)</div>
+                <div id="computer-score">0</div>
+            </div>
+        </div>
+        
+        <div class="difficulty-selector">
+            <button class="difficulty-btn" data-level="easy">Facile</button>
+            <button class="difficulty-btn active" data-level="medium">Moyen</button>
+            <button class="difficulty-btn" data-level="hard">Difficile</button>
+        </div>
+        
+        <div class="status">Tour du joueur: X</div>
+        
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        
+        <div class="controls">
+         
+            <button class="reset-btn" id="reset">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                </svg>
+                Rejouer
+            </button>
+            <button class="new-game-btn" id="new-game">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+                </svg>
+                Nouveau
+            </button>
+        </div>
+    </div>
+
+   
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Éléments du DOM
+            const boardElement = document.getElementById('board');
+            const cells = document.querySelectorAll('.cell');
+            const status = document.querySelector('.status');
+            const resetButton = document.getElementById('reset');
+            const newGameButton = document.getElementById('new-game');
+            const playerScoreElement = document.getElementById('player-score');
+            const computerScoreElement = document.getElementById('computer-score');
+            const drawScoreElement = document.getElementById('draw-score');
+            const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+            const playerNameElement = document.getElementById('player-name');
+            const playerLabel = document.getElementById('player-label');
+            const changeNameButton = document.getElementById('change-name');
+            const nameModal = document.getElementById('name-modal');
+            const nameInput = document.getElementById('name-input');
+            const cancelNameButton = document.getElementById('cancel-name');
+            const saveNameButton = document.getElementById('save-name');
+            
+            // Variables du jeu
+            let currentPlayer = 'X';
+            let gameState = ['', '', '', '', '', '', '', '', ''];
+            let gameActive = true;
+            let scores = { player: 0, computer: 0, draw: 0 };
+            let difficulty = 'medium';
+            let playerName = sessionStorage.getItem('pseudo') || 'Invité';
+            
+            // Conditions de victoire
+            const winningConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // lignes
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // colonnes
+                [0, 4, 8], [2, 4, 6]             // diagonales
+            ];
+            
+            // Initialisation du jeu
+            function initGame() {
+                updatePlayerName();
+                
+                cells.forEach(cell => {
+                    cell.addEventListener('click', handleCellClick, { passive: true });
+                    cell.textContent = '';
+                    cell.className = 'cell';
+                });
+                
+                currentPlayer = 'X';
+                gameState = ['', '', '', '', '', '', '', '', ''];
+                gameActive = true;
+                updateStatus();
+            }
+            
+            // Mettre à jour le nom du joueur
+            function updatePlayerName() {
+                playerNameElement.textContent = playerName;
+                playerLabel.textContent = `${playerName} (X)`;
+            }
+            
+            // Mettre à jour le statut du jeu
+            function updateStatus() {
+                status.textContent = currentPlayer === 'X' 
+                    ? `Tour de ${playerName}: X` 
+                    : "L'IA réfléchit...";
+            }
+            
+            // Gestion du clic sur une cellule
+            function handleCellClick(e) {
+                if (!gameActive || currentPlayer !== 'X') return;
+                
+                const clickedCell = e.target;
+                const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+                
+                if (gameState[clickedCellIndex] !== '') return;
+                
+                makeMove(clickedCellIndex, 'X');
+                
+                if (gameActive) {
+                    currentPlayer = 'O';
+                    updateStatus();
+                    setTimeout(computerMove, 600);
+                }
+            }
+            
+            // Mouvement de l'ordinateur
+            function computerMove() {
+                if (!gameActive || currentPlayer !== 'O') return;
+                
+                boardElement.classList.add('thinking');
+                
+                setTimeout(() => {
+                    boardElement.classList.remove('thinking');
+                    
+                    let move;
+                    if (difficulty === 'easy') move = easyAI();
+                    else if (difficulty === 'medium') move = mediumAI();
+                    else move = hardAI();
+                    
+                    makeMove(move, 'O');
+                    currentPlayer = 'X';
+                    updateStatus();
+                }, 800);
+            }
+            
+            // IA facile
+            function easyAI() {
+                const availableCells = gameState
+                    .map((cell, index) => cell === '' ? index : null)
+                    .filter(val => val !== null);
+                return availableCells[Math.floor(Math.random() * availableCells.length)];
+            }
+            
+            // IA moyenne
+            function mediumAI() {
+                // 1. Essaye de gagner
+                let move = findWinningMove('O');
+                if (move !== undefined) return move;
+                
+                // 2. Essaye de bloquer
+                move = findWinningMove('X');
+                if (move !== undefined) return move;
+                
+                // 3. Prend le centre
+                if (gameState[4] === '') return 4;
+                
+                // 4. Prend un coin aléatoire
+                const corners = [0, 2, 6, 8];
+                const availableCorners = corners.filter(index => gameState[index] === '');
+                if (availableCorners.length > 0) {
+                    return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+                }
+                
+                // 5. Prend n'importe quelle case
+                const availableCells = gameState
+                    .map((cell, index) => cell === '' ? index : null)
+                    .filter(val => val !== null);
+                return availableCells[Math.floor(Math.random() * availableCells.length)];
+            }
+            
+            // IA difficile (Minimax)
+            function hardAI() {
+                let bestScore = -Infinity;
+                let bestMove;
+                
+                for (let i = 0; i < 9; i++) {
+                    if (gameState[i] === '') {
+                        gameState[i] = 'O';
+                        let score = minimax(gameState, 0, false);
+                        gameState[i] = '';
+                        
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMove = i;
+                        }
+                    }
+                }
+                
+                return bestMove;
+            }
+            
+            // Algorithme Minimax
+            function minimax(board, depth, isMaximizing) {
+                const result = checkGameResult(board);
+                if (result === 'O') return 10 - depth;
+                if (result === 'X') return depth - 10;
+                if (result === 'draw') return 0;
+                
+                if (isMaximizing) {
+                    let bestScore = -Infinity;
+                    for (let i = 0; i < 9; i++) {
+                        if (board[i] === '') {
+                            board[i] = 'O';
+                            bestScore = Math.max(bestScore, minimax(board, depth + 1, false));
+                            board[i] = '';
+                        }
+                    }
+                    return bestScore;
+                } else {
+                    let bestScore = Infinity;
+                    for (let i = 0; i < 9; i++) {
+                        if (board[i] === '') {
+                            board[i] = 'X';
+                            bestScore = Math.min(bestScore, minimax(board, depth + 1, true));
+                            board[i] = '';
+                        }
+                    }
+                    return bestScore;
+                }
+            }
+            
+            // Vérifie l'état du jeu
+            function checkGameResult(board) {
+                for (let condition of winningConditions) {
+                    const [a, b, c] = condition;
+                    if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+                        return board[a];
+                    }
+                }
+                return board.includes('') ? null : 'draw';
+            }
+            
+            // Trouve un coup gagnant
+            function findWinningMove(player) {
+                for (let condition of winningConditions) {
+                    const [a, b, c] = condition;
+                    if (gameState[a] === player && gameState[b] === player && gameState[c] === '') return c;
+                    if (gameState[a] === player && gameState[c] === player && gameState[b] === '') return b;
+                    if (gameState[b] === player && gameState[c] === player && gameState[a] === '') return a;
+                }
+            }
+            
+            // Effectue un mouvement
+            function makeMove(index, player) {
+                gameState[index] = player;
+                cells[index].textContent = player;
+                cells[index].classList.add(player.toLowerCase());
+                checkResult();
+            }
+            
+            // Vérifie le résultat
+            function checkResult() {
+                const result = checkGameResult(gameState);
+                
+                if (result) {
+                    gameActive = false;
+                    
+                    if (result === 'draw') {
+                        status.textContent = 'Match nul !';
+                        scores.draw++;
+                        drawScoreElement.textContent = scores.draw;
+                    } else {
+                        const isPlayerWin = result === 'X';
+                        status.textContent = isPlayerWin 
+                            ? `${playerName} a gagné !` 
+                            : "L'IA a gagné !";
+                        
+                        if (isPlayerWin) {
+                            scores.player++;
+                            playerScoreElement.textContent = scores.player;
+                        } else {
+                            scores.computer++;
+                            computerScoreElement.textContent = scores.computer;
+                        }
+                        
+                        highlightWin(result);
+                    }
+                }
+            }
+            
+            // Met en valeur les cases gagnantes
+            function highlightWin(winner) {
+                for (let condition of winningConditions) {
+                    const [a, b, c] = condition;
+                    if (gameState[a] === winner && gameState[b] === winner && gameState[c] === winner) {
+                        cells[a].classList.add('winning-cell');
+                        cells[b].classList.add('winning-cell');
+                        cells[c].classList.add('winning-cell');
+                        break;
+                    }
+                }
+            }
+            
+            // Réinitialise le plateau
+            function resetBoard() {
+                cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.className = 'cell';
+                });
+                
+                currentPlayer = 'X';
+                gameState = ['', '', '', '', '', '', '', '', ''];
+                gameActive = true;
+                updateStatus();
+            }
+            
+            // Nouvelle partie
+            function newGame() {
+                scores = { player: 0, computer: 0, draw: 0 };
+                playerScoreElement.textContent = '0';
+                computerScoreElement.textContent = '0';
+                drawScoreElement.textContent = '0';
+                resetBoard();
+            }
+            
+            // Change la difficulté
+            function setDifficulty(level) {
+                difficulty = level;
+                difficultyButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.level === level);
+                });
+                resetBoard();
+            }
+            
+            // Gestion du pseudo
+            function showNameModal() {
+                nameInput.value = playerName === 'Invité' ? '' : playerName;
+                nameModal.style.display = 'flex';
+                nameInput.focus();
+            }
+            
+            function hideNameModal() {
+                nameModal.style.display = 'none';
+            }
+            
+            function savePlayerName() {
+                const newName = nameInput.value.trim() || 'Invité';
+                playerName = newName;
+                sessionStorage.setItem('morpionPlayerName', newName);
+                updatePlayerName();
+                hideNameModal();
+            }
+            
+            // Écouteurs d'événements
+            resetButton.addEventListener('click', resetBoard);
+            newGameButton.addEventListener('click', newGame);
+            difficultyButtons.forEach(btn => {
+                btn.addEventListener('click', () => setDifficulty(btn.dataset.level));
+            });
+  
+         
+            
+            // Démarrer le jeu
+            initGame();
+        });
+    </script>
+</body>
+</html>

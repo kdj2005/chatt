@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu du Taquin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .puzzle-container {
+            width: 300px;
+            height: 300px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2px;
+            margin-bottom: 20px;
+            background-color: #333;
+            border: 2px solid #333;
+        }
+        .tile {
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .tile:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+        .empty {
+            background-color: #333;
+            cursor: default;
+        }
+        .moves {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jeu du Taquin</h1>
+    <div class="moves">Mouvements: <span id="moves">0</span></div>
+    <div class="puzzle-container" id="puzzle"></div>
+    <button id="shuffle">Mélanger</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const puzzle = document.getElementById('puzzle');
+            const movesDisplay = document.getElementById('moves');
+            const shuffleBtn = document.getElementById('shuffle');
+            
+            const SIZE = 4;
+            let board = [];
+            let emptyPos = { row: SIZE - 1, col: SIZE - 1 };
+            let moves = 0;
+            
+            // Initialiser le plateau
+            function initBoard() {
+                puzzle.innerHTML = '';
+                board = [];
+                moves = 0;
+                movesDisplay.textContent = moves;
+                
+                // Créer un tableau ordonné (1-15 + case vide)
+                let numbers = [];
+                for (let i = 1; i < SIZE * SIZE; i++) {
+                    numbers.push(i);
+                }
+                
+                // Créer le plateau
+                for (let row = 0; row < SIZE; row++) {
+                    board[row] = [];
+                    for (let col = 0; col < SIZE; col++) {
+                        if (row === SIZE - 1 && col === SIZE - 1) {
+                            board[row][col] = 0; // Case vide
+                        } else {
+                            board[row][col] = numbers[row * SIZE + col];
+                        }
+                    }
+                }
+                
+                renderBoard();
+            }
+            
+            // Mélanger le plateau
+            function shuffleBoard() {
+                // Effectuer des mouvements aléatoires pour mélanger
+                const shuffleMoves = 100;
+                let lastMove = null;
+                
+                for (let i = 0; i < shuffleMoves; i++) {
+                    const directions = [];
+                    const { row, col } = emptyPos;
+                    
+                    // Déterminer les directions possibles
+                    if (row > 0) directions.push('up');
+                    if (row < SIZE - 1) directions.push('down');
+                    if (col > 0) directions.push('left');
+                    if (col < SIZE - 1) directions.push('right');
+                    
+                    // Éviter de revenir en arrière
+                    const filteredDirections = directions.filter(dir => {
+                        if (!lastMove) return true;
+                        return !(
+                            (dir === 'up' && lastMove === 'down') ||
+                            (dir === 'down' && lastMove === 'up') ||
+                            (dir === 'left' && lastMove === 'right') ||
+                            (dir === 'right' && lastMove === 'left')
+                        );
+                    });
+                    
+                    // Choisir une direction aléatoire
+                    const randomDir = filteredDirections[Math.floor(Math.random() * filteredDirections.length)];
+                    lastMove = randomDir;
+                    
+                    // Effectuer le mouvement
+                    switch(randomDir) {
+                        case 'up':
+                            moveTile(emptyPos.row + 1, emptyPos.col);
+                            break;
+                        case 'down':
+                            moveTile(emptyPos.row - 1, emptyPos.col);
+                            break;
+                        case 'left':
+                            moveTile(emptyPos.row, emptyPos.col + 1);
+                            break;
+                        case 'right':
+                            moveTile(emptyPos.row, emptyPos.col - 1);
+                            break;
+                    }
+                }
+                
+                moves = 0;
+                movesDisplay.textContent = moves;
+            }
+            
+            // Afficher le plateau
+            function renderBoard() {
+                puzzle.innerHTML = '';
+                
+                for (let row = 0; row < SIZE; row++) {
+                    for (let col = 0; col < SIZE; col++) {
+                        const value = board[row][col];
+                        const tile = document.createElement('div');
+                        tile.className = value === 0 ? 'tile empty' : 'tile';
+                        tile.textContent = value === 0 ? '' : value;
+                        tile.dataset.row = row;
+                        tile.dataset.col = col;
+                        
+                        if (value !== 0) {
+                            tile.addEventListener('click', () => {
+                                if (isAdjacent(row, col)) {
+                                    moveTile(row, col);
+                                }
+                            });
+                        }
+                        
+                        puzzle.appendChild(tile);
+                    }
+                }
+            }
+            
+            // Vérifier si une case est adjacente à la case vide
+            function isAdjacent(row, col) {
+                return (
+                    (Math.abs(row - emptyPos.row) === 1 && col === emptyPos.col) ||
+                    (Math.abs(col - emptyPos.col) === 1 && row === emptyPos.row)
+                );
+            }
+            
+            // Déplacer une case
+            function moveTile(row, col) {
+                // Échanger la case avec la case vide
+                board[emptyPos.row][emptyPos.col] = board[row][col];
+                board[row][col] = 0;
+                
+                // Mettre à jour la position vide
+                emptyPos = { row, col };
+                
+                // Incrémenter le compteur de mouvements
+                moves++;
+                movesDisplay.textContent = moves;
+                
+                // Re-dessiner le plateau
+                renderBoard();
+                
+                // Vérifier si le puzzle est résolu
+                if (isSolved()) {
+                    setTimeout(() => alert(`Félicitations ! Résolu en ${moves} coups !`), 100);
+                }
+            }
+            
+            // Vérifier si le puzzle est résolu
+            function isSolved() {
+                for (let row = 0; row < SIZE; row++) {
+                    for (let col = 0; col < SIZE; col++) {
+                        if (row === SIZE - 1 && col === SIZE - 1) {
+                            if (board[row][col] !== 0) return false;
+                        } else {
+                            if (board[row][col] !== row * SIZE + col + 1) return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            
+            // Initialiser le jeu
+            initBoard();
+            shuffleBtn.addEventListener('click', shuffleBoard);
+        });
+    </script>
+</body>
+</html>

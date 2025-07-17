@@ -1,0 +1,64 @@
+.game-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.choices {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.choice {
+    font-size: 3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.choice:hover {
+    transform: scale(1.1);
+}
+
+.result {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    font-size: 2rem;
+}
+
+.player-choice, .computer-choice {
+    font-size: 3rem;
+}
+
+.score {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.final-result {
+    font-size: 1.5rem;
+    font-weight: bold;
+    min-height: 2rem;
+}
+
+.back-btn {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+}

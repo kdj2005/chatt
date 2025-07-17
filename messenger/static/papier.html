@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pierre-Papier-Ciseaux - ChatApp</title>
+    <link rel="stylesheet" href="../style-jeux.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Pierre-Papier-Ciseaux</h1>
+        <a href="../index.html" class="back-btn">← Retour</a>
+    </header>
+
+    <main>
+        <div class="game-container">
+            <div class="choices">
+                <button class="choice" data-choice="pierre">✊</button>
+                <button class="choice" data-choice="papier">✋</button>
+                <button class="choice" data-choice="ciseaux">✌️</button>
+            </div>
+
+            <div class="result">
+                <div class="player-choice"></div>
+                <div class="vs">VS</div>
+                <div class="computer-choice"></div>
+            </div>
+
+            <div class="score">
+                <p>Vous: <span id="player-score">0</span></p>
+                <p>Ordinateur: <span id="computer-score">0</span></p>
+            </div>
+
+            <div class="final-result"></div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

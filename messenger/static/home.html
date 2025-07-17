@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatApp - Fadel KDJ & Pierre</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --dark: #2b2d42;
+            --light: #f8f9fa;
+            --white: #ffffff;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 15px 30px rgba(67, 97, 238, 0.15);
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+            background-color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            gap: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: translateY(-2px);
+        }
+        
+        .logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .auth-buttons .btn {
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.1);
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 100px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(67,97,238,0.05) 0%, rgba(255,255,255,0) 70%);
+            z-index: -1;
+            animation: float 15s infinite alternate ease-in-out;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(5%, 5%); }
+            100% { transform: translate(-5%, -5%); }
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            line-height: 1.2;
+            animation: fadeInUp 1s ease;
+        }
+        
+        .hero h1 span {
+            color: var(--primary);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .hero h1 span::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: rgba(67, 97, 238, 0.2);
+            z-index: -1;
+            border-radius: 4px;
+            animation: underline 2s infinite alternate;
+        }
+        
+        @keyframes underline {
+            0% { width: 0; left: 50%; }
+            100% { width: 100%; left: 0; }
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--dark);
+            opacity: 0.8;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+        
+        .app-screenshot {
+            max-width: 220px;
+            margin: 40px auto 0;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.5s ease;
+            animation: fadeIn 1s ease 0.4s both, float 6s ease-in-out infinite;
+            transform-style: preserve-3d;
+        }
+        
+        .app-screenshot:hover {
+            transform: translateY(-10px) rotateY(10deg);
+            box-shadow: 0 20px 40px rgba(67, 97, 238, 0.2);
+        }
+        
+        .app-screenshot img {
+            width: 100%;
+            display: block;
+            transform: translateZ(0);
+        }
+        
+        .features {
+            padding: 100px 0;
+            background-color: var(--white);
+            position: relative;
+        }
+        
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234361ee' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            z-index: 0;
+            opacity: 0.5;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        .section-title p {
+            font-size: 1.1rem;
+            color: var(--dark);
+            opacity: 0.7;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .feature-card {
+            padding: 30px;
+            border-radius: 16px;
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.5s ease;
+            border: 1px solid rgba(0,0,0,0.03);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        
+        .feature-card:nth-child(1) { animation-delay: 0.4s; }
+        .feature-card:nth-child(2) { animation-delay: 0.6s; }
+        .feature-card:nth-child(3) { animation-delay: 0.8s; }
+        
+        .feature-card:hover {
+            transform: translateY(-10px) !important;
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--white), #f9faff);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(67, 97, 238, 0.05));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            transition: all 0.5s ease;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.1);
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover h3 {
+            color: var(--primary);
+        }
+        
+        .feature-card p {
+            color: var(--dark);
+            opacity: 0.7;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover p {
+            opacity: 0.9;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(135deg, var(--dark), #1a1b2d);
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(67,97,238,0.1) 0%, rgba(43,45,66,0) 70%);
+            z-index: 0;
+            animation: float 20s infinite alternate-reverse ease-in-out;
+        }
+        
+        .creators {
+            font-weight: bold;
+            color: var(--primary-light);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .footer p:first-child {
+            animation: fadeIn 1s ease;
+            font-size: 1.2rem;
+        }
+        
+        .chat-bubble {
+            position: absolute;
+            background-color: var(--primary);
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .bubble-1 {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: 10%;
+            animation: float 8s infinite ease-in-out;
+        }
+        
+        .bubble-2 {
+            width: 150px;
+            height: 150px;
+            bottom: 10%;
+            right: 15%;
+            animation: float 12s infinite ease-in-out reverse;
+        }
+        
+        .bubble-3 {
+            width: 70px;
+            height: 70px;
+            top: 60%;
+            left: 30%;
+            animation: float 10s infinite ease-in-out 2s;
+        }
+        
+        [data-animate] {
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+        
+        [data-animate="fadeInUp"] {
+            transform: translateY(30px);
+        }
+        
+        [data-animate="fadeInLeft"] {
+            transform: translateX(-30px);
+        }
+        
+        [data-animate="fadeInRight"] {
+            transform: translateX(30px);
+        }
+        
+        [data-animate].animated {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+        
+        @media (max-width: 768px) {
+            .auth-buttons {
+                gap: 8px;
+            }
+            
+            .auth-buttons .btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .logo span:last-child {
+                display: none;
+            }
+            
+            .logo-icon {
+                margin-right: 0;
+            }
+            
+            .hero {
+                padding: 80px 0 60px;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .features {
+                padding: 80px 0;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-card {
+                max-width: 350px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo animate__animated animate__fadeInLeft">
+                    <span class="logo-icon">💬</span>
+                    <span>ChatApp</span>
+                </a>
+                <div class="auth-buttons animate__animated animate__fadeInRight">
+                    <a href="/login" class="btn btn-outline">Connexion</a>
+                    <a href="/register" class="btn btn-primary">Inscription</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1 data-animate="fadeInUp">Discutez simplement <span>avec ChatApp</span></h1>
+                <p data-animate="fadeInUp">Une messagerie intuitive et moderne pour rester connecté avec vos proches et collègues</p>
+                <div class="app-screenshot" data-animate="fadeIn">
+                    <img src="/static/CH.png" alt="Capture d'écran de l'application">
+                </div>
+            </div>
+        </section>
+        
+        <section class="features">
+            <div class="container">
+                <div class="section-title">
+                    <h2 data-animate="fadeInUp">Une expérience exceptionnelle</h2>
+                    <p data-animate="fadeInUp">Découvrez ce qui rend ChatApp si spécial</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card" data-animate="fadeInUp">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Confidentialité</h3>
+                        <p>Vos conversations restent privées grâce à notre système de chiffrement</p>
+                    </div>
+                    <div class="feature-card" data-animate="fadeInUp">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Rapidité</h3>
+                        <p>Messages envoyés et reçus en temps réel sans délai</p>
+                    </div>
+                    <div class="feature-card" data-animate="fadeInUp">
+                        <div class="feature-icon">🎙️</div>
+                        <h3>Vocaux</h3>
+                        <p>Enregistrez et envoyez des messages vocaux en un clic</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="footer">
+        <div class="chat-bubble bubble-1"></div>
+        <div class="chat-bubble bubble-2"></div>
+        <div class="chat-bubble bubble-3"></div>
+        <div class="container">
+            <p>Réalisé avec ❤️ par <span class="creators">Fadel KDJ</span> et <span class="creators">Pierre DHM</span></p>
+            <p>© 2023 ChatApp - Tous droits réservés</p>
+        </div>
+    </footer>
+
+    <script>
+        // Animation on scroll
+        const animateElements = document.querySelectorAll('[data-animate]');
+        
+        const animateOnScroll = () => {
+            animateElements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementPosition < windowHeight - 100) {
+                    element.classList.add('animated');
+                }
+            });
+        };
+        
+        // Initial check
+        animateOnScroll();
+        
+        // Check on scroll
+        window.addEventListener('scroll', animateOnScroll);
+        
+        // Floating animation for app screenshot
+        const appScreenshot = document.querySelector('.app-screenshot');
+        let floatDirection = 1;
+        
+        const floatAnimation = () => {
+            const currentTransform = appScreenshot.style.transform || '';
+            const currentY = currentTransform.match(/translateY\((-?\d+)px\)/);
+            let y = currentY ? parseInt(currentY[1]) : 0;
+            
+            if (y > 10) floatDirection = -1;
+            if (y < -10) floatDirection = 1;
+            
+            y += floatDirection * 0.5;
+            
+            appScreenshot.style.transform = `translateY(${y}px) rotateY(${y/2}deg)`;
+            requestAnimationFrame(floatAnimation);
+        };
+        
+        // Start floating animation
+        if (appScreenshot) {
+            requestAnimationFrame(floatAnimation);
+        }
+    </script>
+</body>
+</html>

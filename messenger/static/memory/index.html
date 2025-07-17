@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Morpion - Joueur vs Ordinateur</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 8px;
+            margin-bottom: 25px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .cell:hover {
+            transform: scale(1.03);
+            background-color: #f8f8f8;
+        }
+        
+        .cell.x {
+            color: #ff4757;
+        }
+        
+        .cell.o {
+            color: #2ed573;
+        }
+        
+        .status {
+            font-size: 24px;
+            margin-bottom: 25px;
+            font-weight: bold;
+            color: #333;
+            padding: 10px 20px;
+            background-color: white;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .score {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .score div {
+            background-color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .player-x {
+            color: #ff4757;
+        }
+        
+        .player-o {
+            color: #2ed573;
+        }
+    </style>
+</head>
+<body>
+    <h1>Morpion - Joueur vs Ordinateur</h1>
+    <div class="score">
+        <div class="player-x">Joueur (X): <span id="player-score">0</span></div>
+        <div>Nuls: <span id="draw-score">0</span></div>
+        <div class="player-o">Ordinateur (O): <span id="computer-score">0</span></div>
+    </div>
+    <div class="status">Tour du joueur: X</div>
+    <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+    <div class="controls">
+        <button id="reset">Rejouer</button>
+        <button id="new-game">Nouvelle partie</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const board = document.getElementById('board');
+            const cells = document.querySelectorAll('.cell');
+            const status = document.querySelector('.status');
+            const resetButton = document.getElementById('reset');
+            const newGameButton = document.getElementById('new-game');
+            const playerScoreElement = document.getElementById('player-score');
+            const computerScoreElement = document.getElementById('computer-score');
+            const drawScoreElement = document.getElementById('draw-score');
+            
+            let currentPlayer = 'X'; // Le joueur humain commence toujours
+            let gameState = ['', '', '', '', '', '', '', '', ''];
+            let gameActive = true;
+            let scores = { player: 0, computer: 0, draw: 0 };
+            
+            const winningConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // lignes
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // colonnes
+                [0, 4, 8], [2, 4, 6]             // diagonales
+            ];
+            
+            // Initialisation du jeu
+            function initGame() {
+                cells.forEach(cell => {
+                    cell.addEventListener('click', handleCellClick);
+                    cell.textContent = '';
+                    cell.classList.remove('x', 'o');
+                });
+                
+                currentPlayer = 'X';
+                gameState = ['', '', '', '', '', '', '', '', ''];
+                gameActive = true;
+                status.textContent = `Tour du joueur: ${currentPlayer}`;
+            }
+            
+            // Gestion du clic sur une cellule
+            function handleCellClick(e) {
+                if (!gameActive || currentPlayer !== 'X') return;
+                
+                const clickedCell = e.target;
+                const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+                
+                if (gameState[clickedCellIndex] !== '') return;
+                
+                makeMove(clickedCellIndex, 'X');
+                
+                if (gameActive) {
+                    currentPlayer = 'O';
+                    status.textContent = "L'ordinateur réfléchit...";
+                    
+                    // L'ordinateur joue après un court délai pour un effet plus naturel
+                    setTimeout(computerMove, 800);
+                }
+            }
+            
+            // L'ordinateur fait son mouvement
+            function computerMove() {
+                if (!gameActive || currentPlayer !== 'O') return;
+                
+                // Stratégie de l'ordinateur :
+                // 1. Vérifie s'il peut gagner
+                // 2. Vérifie s'il doit bloquer le joueur
+                // 3. Prend le centre si disponible
+                // 4. Prend un coin aléatoire si disponible
+                // 5. Prend n'importe quelle case disponible
+                
+                let move;
+                
+                // 1. Vérifie s'il peut gagner
+                move = findWinningMove('O');
+                if (move === undefined) {
+                    // 2. Vérifie s'il doit bloquer le joueur
+                    move = findWinningMove('X');
+                }
+                
+                if (move === undefined) {
+                    // 3. Prend le centre si disponible
+                    if (gameState[4] === '') {
+                        move = 4;
+                    } else {
+                        // 4. Prend un coin aléatoire si disponible
+                        const corners = [0, 2, 6, 8];
+                        const availableCorners = corners.filter(index => gameState[index] === '');
+                        if (availableCorners.length > 0) {
+                            move = availableCorners[Math.floor(Math.random() * availableCorners.length)];
+                        }
+                    }
+                }
+                
+                // 5. Prend n'importe quelle case disponible
+                if (move === undefined) {
+                    const availableCells = gameState.map((cell, index) => cell === '' ? index : null).filter(val => val !== null);
+                    move = availableCells[Math.floor(Math.random() * availableCells.length)];
+                }
+                
+                makeMove(move, 'O');
+                currentPlayer = 'X';
+                status.textContent = `Tour du joueur: ${currentPlayer}`;
+            }
+            
+            // Trouve un mouvement gagnant ou bloquant
+            function findWinningMove(player) {
+                for (let i = 0; i < winningConditions.length; i++) {
+                    const [a, b, c] = winningConditions[i];
+                    // Vérifie si deux cases sont occupées par le joueur et la troisième est vide
+                    if (gameState[a] === player && gameState[b] === player && gameState[c] === '') return c;
+                    if (gameState[a] === player && gameState[c] === player && gameState[b] === '') return b;
+                    if (gameState[b] === player && gameState[c] === player && gameState[a] === '') return a;
+                }
+                return undefined;
+            }
+            
+            // Effectue un mouvement
+            function makeMove(index, player) {
+                gameState[index] = player;
+                cells[index].textContent = player;
+                cells[index].classList.add(player.toLowerCase());
+                checkResult();
+            }
+            
+            // Vérifie le résultat de la partie
+            function checkResult() {
+                let roundWon = false;
+                
+                for (let i = 0; i < winningConditions.length; i++) {
+                    const [a, b, c] = winningConditions[i];
+                    
+                    if (gameState[a] === '' || gameState[b] === '' || gameState[c] === '') {
+                        continue;
+                    }
+                    
+                    if (gameState[a] === gameState[b] && gameState[b] === gameState[c]) {
+                        roundWon = true;
+                        break;
+                    }
+                }
+                
+                if (roundWon) {
+                    const winner = currentPlayer === 'X' ? 'Joueur' : 'Ordinateur';
+                    status.textContent = `${winner} a gagné !`;
+                    gameActive = false;
+                    
+                    // Mise à jour du score
+                    if (currentPlayer === 'X') {
+                        scores.player++;
+                        playerScoreElement.textContent = scores.player;
+                    } else {
+                        scores.computer++;
+                        computerScoreElement.textContent = scores.computer;
+                    }
+                    
+                    highlightWinningCells();
+                    return;
+                }
+                
+                if (!gameState.includes('')) {
+                    status.textContent = 'Match nul !';
+                    gameActive = false;
+                    scores.draw++;
+                    drawScoreElement.textContent = scores.draw;
+                    return;
+                }
+            }
+            
+            // Met en évidence les cellules gagnantes
+            function highlightWinningCells() {
+                for (let i = 0; i < winningConditions.length; i++) {
+                    const [a, b, c] = winningConditions[i];
+                    
+                    if (gameState[a] !== '' && gameState[a] === gameState[b] && gameState[b] === gameState[c]) {
+                        cells[a].style.backgroundColor = currentPlayer === 'X' ? 'rgba(255, 71, 87, 0.2)' : 'rgba(46, 213, 115, 0.2)';
+                        cells[b].style.backgroundColor = currentPlayer === 'X' ? 'rgba(255, 71, 87, 0.2)' : 'rgba(46, 213, 115, 0.2)';
+                        cells[c].style.backgroundColor = currentPlayer === 'X' ? 'rgba(255, 71, 87, 0.2)' : 'rgba(46, 213, 115, 0.2)';
+                        break;
+                    }
+                }
+            }
+            
+            // Réinitialise le plateau sans réinitialiser les scores
+            function resetBoard() {
+                cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.classList.remove('x', 'o');
+                    cell.style.backgroundColor = '';
+                });
+                
+                currentPlayer = 'X';
+                gameState = ['', '', '', '', '', '', '', '', ''];
+                gameActive = true;
+                status.textContent = `Tour du joueur: ${currentPlayer}`;
+            }
+            
+            // Nouvelle partie (réinitialise tout)
+            function newGame() {
+                scores = { player: 0, computer: 0, draw: 0 };
+                playerScoreElement.textContent = '0';
+                computerScoreElement.textContent = '0';
+                drawScoreElement.textContent = '0';
+                resetBoard();
+            }
+            
+            // Événements
+            resetButton.addEventListener('click', resetBoard);
+            newGameButton.addEventListener('click', newGame);
+            
+            // Démarrer le jeu
+            initGame();
+        });
+    </script>
+</body>
+</html>
